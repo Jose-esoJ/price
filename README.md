@@ -1,4 +1,4 @@
-# price API
+# Price API
 This is a simple RESTful API for Get price in time intervals, built with Spring Boot.
 The API responds with JSON and handles error messages in a consistent
 
