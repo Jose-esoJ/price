@@ -1,7 +1,8 @@
 package com.example.price.controller;
 
 import com.example.price.application.dto.PriceResponseDto;
-import com.example.price.application.service.PriceService;
+import com.example.price.application.service.ObtainPrices;
+import com.example.price.domain.exception.PriceNotFoundException;
 import com.example.price.web.controller.PriceController;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,49 +14,66 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-public class PriceControllerTest {
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.MediaType;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class PriceControllerTest {
 
     @Mock
-    private PriceService priceService;
+    private ObtainPrices obtainPrices;
 
     @InjectMocks
     private PriceController priceController;
 
-    private MockMvc mockMvc;
-
     @BeforeEach
-    public void setUp() {
-        MockitoAnnotations.initMocks(this);
-        mockMvc = MockMvcBuilders.standaloneSetup(priceController).build();
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
     }
 
     @Test
-    public void test_GetPriceSuccess() throws Exception {
+    void test_GetPrice_Success() {
 
-        PriceResponseDto priceResponseDto = new PriceResponseDto(35455L, 1L, 1L, "2020-06-14 00:00:00", "2020-12-31 23:59:59", new BigDecimal("38.95"));
+        String applicationDate = "2020-06-14 10:00:00";
+        Long productId = 35455L;
+        Long brandId = 1L;
 
-        List<PriceResponseDto> prices = List.of(priceResponseDto);
+        PriceResponseDto mockResponse = new PriceResponseDto(productId, brandId, 1L, applicationDate, "2020-06-14 18:00:00", new BigDecimal("35.50"));
 
-        when(priceService.getPrice(35455L, 1L, "2020-06-14 10:00:00")).thenReturn(prices);
+        when(obtainPrices.getPrice(productId, brandId, applicationDate)).thenReturn(mockResponse);
 
-        mockMvc.perform(get("/api/prices/search")
-                        .param("applicationDate", "2020-06-14 10:00:00")
-                        .param("productId", "35455")
-                        .param("brandId", "1")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(jsonPath("$", hasSize(1))) // Validar que hay un precio en la respuesta
-                .andExpect(jsonPath("$[0].productId").value(35455L))
-                .andExpect(jsonPath("$[0].price").value(new BigDecimal("38.95")));
+        ResponseEntity<PriceResponseDto> response = priceController.getPrice(applicationDate, productId, brandId);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(mockResponse, response.getBody());
+
+        verify(obtainPrices, times(1)).getPrice(productId, brandId, applicationDate);
+    }
+
+    @Test
+    void test_HandlePrice_NotFoundException() {
+
+        PriceNotFoundException exception = new PriceNotFoundException("Price not found");
+
+        ResponseEntity<?> response = priceController.handleUserAlreadyExistsException(exception);
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertEquals("{\"Message\": \"Price not found\"}", response.getBody());
     }
 
 
 }
+

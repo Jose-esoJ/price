@@ -7,8 +7,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 @AllArgsConstructor
 @Repository
@@ -17,11 +16,10 @@ public class JpaPriceRepositoryAdapter implements PriceRepository {
     private final JpaPriceRepository jpaPriceRepository;
 
     @Override
-    public List<Price> findByProductIdAndBrandIdAndDateRange(Long productId, Long brandId, LocalDateTime date) {
+    public Optional<Price> findByProductIdAndBrandIdAndDateRange(Long productId, Long brandId, LocalDateTime date) {
         return jpaPriceRepository.findByProductIdAndBrandIdAndDateRange(productId, brandId, date)
-                .stream()
-                .map(this::mapPriceEntityToPrice)
-                .collect(Collectors.toList());
+                .map(this::mapPriceEntityToPrice);
+
     }
 
     private Price mapPriceEntityToPrice(PriceEntity entity) {
