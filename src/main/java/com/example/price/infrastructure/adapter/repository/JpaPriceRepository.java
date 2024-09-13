@@ -14,8 +14,6 @@ import java.util.Optional;
 public interface JpaPriceRepository extends JpaRepository<PriceEntity, Long> {
 
     @Query("SELECT p FROM PriceEntity p WHERE p.productId = :productId AND p.brandId = :brandId " +
-            "AND p.startDate <= :dateInitial AND p.endDate >= :dateInitial " +
-            "AND p.priority = (SELECT MAX(p2.priority) FROM PriceEntity p2 WHERE p2.productId = :productId AND p2.brandId = :brandId " +
-            "AND p2.startDate <= :dateInitial AND p2.endDate >= :dateInitial)")
+            "AND p.startDate <= :dateInitial AND p.endDate >= :dateInitial ")
     Optional<PriceEntity> findByProductIdAndBrandIdAndDateRange(@Param("productId")Long productId, @Param("brandId")Long brandId, @Param("dateInitial")LocalDateTime dateInitial);
 }

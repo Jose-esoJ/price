@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -24,10 +25,10 @@ public class ObtainPricesImpl implements ObtainPrices {
 
         Optional<Price> prices = priceRepository.findByProductIdAndBrandIdAndDateRange(productId, brandId, applicationDate);
 
-        return prices
+        return prices.stream()
+                .max(Comparator.comparing(Price::getPriority))
                 .map(this::mapPriceToPriceResponseDto)
                 .orElseThrow(() -> new PriceNotFoundException("No prices found for the criteria"));
-
     }
 
     private PriceResponseDto mapPriceToPriceResponseDto(Price price) {

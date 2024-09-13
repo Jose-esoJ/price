@@ -18,3 +18,9 @@ The API responds with JSON and handles error messages in a consistent
 
 ### Clone the Repository.
 ### Update dependencies.
+### Execute the following maven commands
+### mvn clean
+### mvn install
+
+## CURL 
+curl --location 'http://localhost:8080/api/prices/search?applicationDate=2023-08-14%2021%3A00%3A00&productId=35455&brandId=1'
